@@ -19,6 +19,17 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
 
 public class LoginActivity extends Activity {
 
@@ -27,6 +38,7 @@ public class LoginActivity extends Activity {
     // UI references.
     private EditText mEmailView;
     private EditText mPasswordView;
+
 //
 //    private String mEmailString;
 //    private String mPasswordString;
@@ -59,7 +71,10 @@ public class LoginActivity extends Activity {
             }
         });
 
-
+        Des des = new Des();
+        des.init();
+        byte[]abc = des.encrypt("aaaaaaa".getBytes());
+        byte[]cdf = des.decrypt(abc);
     }
 
     @Override
@@ -211,6 +226,8 @@ public class LoginActivity extends Activity {
         protected void onCancelled() {
             mAuthTask = null;
         }
+
+
     }
 
 }
