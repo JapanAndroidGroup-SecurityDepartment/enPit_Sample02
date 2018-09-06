@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">enPit_Sample02</string>
+    <string name="app_name">enPit02</string>
     <string name="error_field_required">This field is required</string>
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
