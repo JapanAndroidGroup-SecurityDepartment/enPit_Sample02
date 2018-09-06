@@ -14,14 +14,13 @@ import javax.crypto.spec.DESKeySpec;
 
 public class Des {
     private SecretKey sk;
-    byte[]kagi = "12345678".getBytes();
+    private byte[] kagi = "12345678".getBytes();
 
     void init() {
         try {
             DESKeySpec dks = new DESKeySpec(kagi);
             SecretKeyFactory sfk = SecretKeyFactory.getInstance("DES");
             sk = sfk.generateSecret(dks);
-
 
         } catch (InvalidKeyException e) {
             e.printStackTrace();
@@ -32,7 +31,7 @@ public class Des {
         }
     }
 
-    byte[] encrypt(byte[]in) {
+    byte[] encrypt(byte[] in) {
         try {
             Cipher c = Cipher.getInstance("DES");
 
@@ -55,14 +54,14 @@ public class Des {
         return null;
     }
 
-    byte[] decrypt(byte[] in){
+    byte[] decrypt(byte[] in) {
 
         try {
             Cipher c = Cipher.getInstance("DES");
             c.init(Cipher.DECRYPT_MODE, sk);
 
             byte[] out = c.doFinal(in);
-             return out;
+            return out;
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -70,7 +69,7 @@ public class Des {
             e.printStackTrace();
         } catch (InvalidKeyException e) {
             e.printStackTrace();
-        }catch (BadPaddingException e) {
+        } catch (BadPaddingException e) {
             e.printStackTrace();
         } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
