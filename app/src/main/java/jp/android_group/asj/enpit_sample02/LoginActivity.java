@@ -13,23 +13,13 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.DESKeySpec;
 
 public class LoginActivity extends Activity {
 
@@ -39,9 +29,6 @@ public class LoginActivity extends Activity {
     private EditText mEmailView;
     private EditText mPasswordView;
 
-//
-//    private String mEmailString;
-//    private String mPasswordString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,10 +58,7 @@ public class LoginActivity extends Activity {
             }
         });
 
-        Des des = new Des();
-        des.init();
-        byte[]abc = des.encrypt("aaaaaaa".getBytes());
-        byte[]cdf = des.decrypt(abc);
+        readPassword();
     }
 
     @Override
@@ -92,19 +76,44 @@ public class LoginActivity extends Activity {
         String email = "";
         String password = "";
 
+        //ファイル入力
+        byte[] buff = new byte[1024 * 4];
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
         File file = new File(getExternalFilesDir(null), "password.txt");
 
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            email = br.readLine();
-            password = br.readLine();
-            br.close();
+            FileInputStream is = new FileInputStream(file);
+            BufferedInputStream bis = new BufferedInputStream(is);
+
+            int n = bis.read(buff);
+            while (n != -1) {
+                out.write(buff, 0, n);
+                n = bis.read(buff);
+            }
+            is.close();
 
         } catch (FileNotFoundException e) {
-
+            return;
         } catch (IOException e) {
+            return;
         }
 
+        //復号化
+        byte[] binary = out.toByteArray();
+
+        Des des = new Des();
+        des.init();
+        byte[] s = des.decrypt(binary);
+        if (s == null) return;
+
+        //文字分割
+        String text = new String(s);
+
+        int x1 = text.indexOf("HIMITU_PASSWORD=");
+        email = text.substring("HIIMITU_LOGINID=".length(), x1);
+        password = text.substring("HIMITU_PASSWORD=".length() + x1);
+
+        //Viewへ書き込み
         EditText emailEditText = findViewById(R.id.email);
         emailEditText.setText(email);
 
@@ -113,6 +122,28 @@ public class LoginActivity extends Activity {
 
     }
 
+    /* IDとパスワードをファイルに保存する */
+    void writePassword(String email, String password) {
+
+        //文字連結して暗号化する
+        String text = "HIIMITU_LOGINID=" + email + "HIMITU_PASSWORD=" + password;
+
+        //暗号化
+        Des des = new Des();
+        des.init();
+        byte[] binary = des.encrypt(text.getBytes());
+
+        //ファイル書き込み
+        File file = new File(getExternalFilesDir(null), "password.txt");
+        try {
+            FileOutputStream fs = new FileOutputStream(file);
+            fs.write(binary);
+            fs.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void attemptLogin() {
         if (mAuthTask != null) {
@@ -182,7 +213,7 @@ public class LoginActivity extends Activity {
                 //`ファイルにIDとパスワードを保存する
                 // Simulate network access.
                 Thread.sleep(2000);
-                if (mIsSave) savePassword();
+                if (mIsSave) writePassword(mEmail, mPassword);
             } catch (InterruptedException e) {
                 return false;
             }
@@ -192,21 +223,6 @@ public class LoginActivity extends Activity {
             return true;
         }
 
-        /* IDとパスワードをファイルに保存する */
-        private void savePassword() {
-            File file = new File(getExternalFilesDir(null), "password.txt");
-            try {
-                PrintWriter pw = new PrintWriter(file);
-                pw.println(mEmail);
-                pw.println(mPassword);
-                pw.close();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-        }
 
         @Override
         protected void onPostExecute(final Boolean success) {

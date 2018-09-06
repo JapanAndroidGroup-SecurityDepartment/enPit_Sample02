@@ -39,7 +39,6 @@ public class Des {
             c.init(Cipher.ENCRYPT_MODE, sk);
             byte[] out = c.doFinal(in);
 
-            System.out.println(out);
             return out;
 
         } catch (NoSuchAlgorithmException e) {
@@ -63,8 +62,7 @@ public class Des {
             c.init(Cipher.DECRYPT_MODE, sk);
 
             byte[] out = c.doFinal(in);
-            System.out.println(out);
-            return out;
+             return out;
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
